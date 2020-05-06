@@ -25,8 +25,10 @@ const login = (username, password) => {
             }
             // store user details in local storage to keep user logged in between page refreshes
             localStorage.setItem('user', JSON.stringify(user.results[0]));
-            //store user request count default value 0
+            //store user request count default page request count value 0
             localStorage.setItem("requestCount", 0);
+            // store user request default request time value 0
+            localStorage.setItem("reqTime", 0);
 
             return user.results[0];
         });

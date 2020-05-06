@@ -46,16 +46,24 @@ const useStyles = makeStyles((theme) => ({
 const HomePage = () => {
 
     const [search, setSearch] = useState(""); // search box state
+    const [timer, setTimer] = useState(0); // default timer value
     const [isDisabled, setIsDisabled] = useState(false); // disabled state of search box
 
     const dispatch = useDispatch();
     const classes = useStyles();
 
     // reset search box disabled state and enable searching
-    const resetSearch = () => {
+    const resetSearch = (seconds, reqSeconds) => {
+
+        let timer = (59 - Math.abs(reqSeconds - seconds)) * 1000; // convert seconds to milliseconds 
+        setTimer(timer / 1000);
+
         localStorage.setItem("requestCount", 0);
-        localStorage.removeItem("reqTime");
-        setIsDisabled(false);
+        localStorage.setItem("reqTime", 0);
+        
+        (setTimeout(() => {
+            setIsDisabled(false);
+        }, timer))(timer)
     };
 
     // handle search, controller for search string
@@ -65,20 +73,32 @@ const HomePage = () => {
         let searchStr = e.target.value;
         setSearch(searchStr);
 
+        // get current seconds 
+        let date = new Date();
+        let seconds = date.getSeconds();
+
         // get number of request User has made so far after login
         let currReqCount = parseInt(localStorage.getItem("requestCount"));
+
+        // get user current request time
+        let currReqTime = parseInt(localStorage.getItem("reqTime"));
 
         // get Username, allow user to unlimited request if it is Luke
         let user = JSON.parse(localStorage.getItem("user"));
 
         if (currReqCount > constants.API_CALL_LIMIT &&
             constants.ALLOWED_USER !== user.nme) {
+
             // block user request, disable search box
             setIsDisabled(true);
+            resetSearch(seconds, currReqTime);
 
         } else {
             // increase number of user api call count
             localStorage.setItem("requestCount", currReqCount + 1);
+
+            // set number of second
+            (currReqTime == 0) && localStorage.setItem("reqTime", seconds)
 
             // get planet details
             dispatch(userActions.searchPlanet(searchStr));
@@ -97,12 +117,8 @@ const HomePage = () => {
             <Grid container spacing={2}>
 
                 {isDisabled && <Grid item xs={12} sm={12} >
-                    <p>Search box disabled, Allowed Number of request exhausted. </p>
-                    <Button
-                        variant="contained"
-                        onClick={resetSearch}>
-                        Click to Reset
-                        </Button>
+                    <p>Search box disabled, Allowed Number of request exhausted.
+                        It will be reset after {timer} seconds </p>
                 </Grid>}
                 <Grid item xs={12} sm={12} >
                     <Paper component="form" className={classes.root}>
