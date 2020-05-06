@@ -55,12 +55,16 @@ const HomePage = () => {
     // reset search box disabled state and enable searching
     const resetSearch = (seconds, reqSeconds) => {
 
-        let timer = (59 - Math.abs(reqSeconds - seconds)) * 1000; // convert seconds to milliseconds 
+
+        let timer = (60 - Math.abs(reqSeconds - seconds)) * 1000; // convert seconds to milliseconds 
+        if (reqSeconds > seconds) { // it's greater than the current seconds
+            timer = (60 - (60 - (reqSeconds - seconds))) * 1000;
+        }
         setTimer(timer / 1000);
 
         localStorage.setItem("requestCount", 0);
         localStorage.setItem("reqTime", 0);
-        
+
         (setTimeout(() => {
             setIsDisabled(false);
         }, timer))(timer)
